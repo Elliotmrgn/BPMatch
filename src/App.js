@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import UserInput from "./components/UserInput";
 import VideoPlayer from "./components/videoPlayer";
+import Switch from "react-switch";
 import "./App.css";
+import { Container, Row, Col } from "react-bootstrap"
 import API from "./utils/API";
 
 const App = () => {
   const [search, setSearch] = useState("");
   const [audioID, setAudioID] = useState();
   const [videoID, setVideoID] = useState();
+  const [audioRef, setAudioRef] = useState(null);
+  const [videoRef, setvideoRef] = useState(null);
 
   const handleChange = (event) => {
     setSearch(event.target.value);
@@ -16,9 +20,11 @@ const App = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    // Lookup the Song searched on GetSongBPM.com
     API.bpmLookup(search).then((res) => {
       // console.log("SONG 1 title!!:  ", res.data.search[0]);
 
+      // Lookup The Music Video from IMVDB
       API.musicVideoSearch(
         res.data.search[0].artist.name,
         res.data.search[0].title
@@ -52,10 +58,6 @@ const App = () => {
       });
     });
   };
-  
-  
-  const [audioRef, setAudioRef] = useState(null);
-  const [videoRef, setvideoRef] = useState(null);
 
   let audioSwitched = false;
   const switchVideoAudio = () => {
@@ -98,20 +100,36 @@ const App = () => {
     }
   });
 
-  const videoPlayer = <VideoPlayer id={videoID} stateChange={videoStateChange}/>
-  const audioPlayer = <VideoPlayer id={audioID} stateChange={audioStateChange}/>
+  const videoPlayer = <VideoPlayer id={videoID} stateChange={videoStateChange} opts={{
+    height: "180",
+    width: "50%",
+    playerVars: { autoplay: 0 }
+  }} />
+  const audioPlayer = <VideoPlayer id={audioID} stateChange={audioStateChange} opts={{
+    height: "360",
+    width: "100%",
+    playerVars: { autoplay: 0 }
+  }} />
 
   return (
     <div className="App">
-      <UserInput
-        handleSubmit={handleSubmit}
-        handleChange={handleChange}
-        results={search}
-        switchAudio={switchVideoAudio}
-        checked={audioSwitched}
-      />
-      {audioPlayer}
-      {videoPlayer}
+      <Container>
+        <Row>
+          <Col>
+            <UserInput
+              handleSubmit={handleSubmit}
+              handleChange={handleChange}
+              results={search}
+            />
+            {audioPlayer}
+          </Col>
+          <Col>
+            Switch Audio
+            <Switch onChange={switchVideoAudio} checked={audioSwitched} />
+            {videoPlayer}
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };
